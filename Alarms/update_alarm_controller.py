@@ -1,19 +1,5 @@
-import datetime
-
-
 def update_alarm(alarm):
-
-    sql_subquery = ('SELECT alarm.alarm_id, alarm.enabled, alarm.type,'
-                    ' alarm.name, alarm.description, alarm.timestamp,'
-                    ' users.uuid as user_id, projects.uuid as project_ids,'
-                    ' alarm.state, alarm.state_timestamp, alarm.ok_actions,'
-                    ' alarm.alarm_actions, alarm.insufficient_data_actions,'
-                    ' alarm.rule, alarm.time_constraints, alarm.repeat_actions'
-                    ' FROM alarm'
-                    ' LEFT JOIN users ON alarm.user_id = users.id'
-                    ' LEFT JOIN projects ON alarm.project_id = projects.id'
-                    ' WHERE alarm_id = %s'
-                    )
+    alarm = alarm.as_dict()
     values = []
     sql_query = (' UPDATE alarm'
                  ' SET')
@@ -46,7 +32,9 @@ def update_alarm(alarm):
             LOG.debug(_("Project does not exist in DB"))
             return
 
-    if alarm['enabled']:
+    # Note (alexstav): "'key' in dict" form required
+    # for values with bool or empty array types
+    if 'enabled' in alarm:
         sql_query += ' enabled = %s,'
         values.append(alarm['enabled'])
     if alarm['name']:
@@ -67,10 +55,10 @@ def update_alarm(alarm):
     if alarm['insufficient_data_actions']:
         sql_query += ' insufficient_data_actions = %s,'
         values.append(Json(alarm['insufficient_data_actions']))
-    if alarm['repeat_actions']:
+    if 'repeat_actions' in alarm:
         sql_query += ' repeat_actions = %s,'
         values.append(alarm['repeat_actions'])
-    if alarm['time_constraints']:
+    if 'time_constraints' in alarm:
         sql_query += ' time_constraints = %s,'
         values.append(Json(alarm['time_constraints']))
     if alarm['rule']:
@@ -83,5 +71,6 @@ def update_alarm(alarm):
 
     with PoolConnection(self.conn_pool, cursor_factory=DictCursor) as db:
         db.execute(sql_query, values)
-        stored_alarm = get_alarms(alarm_id=alarm['alarm_id'])
+    # returns first Alarm object from generator
+    stored_alarm = get_alarms(alarm_id=alarm['alarm_id']).next()
     return stored_alarm
