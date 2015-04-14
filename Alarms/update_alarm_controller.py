@@ -4,7 +4,8 @@ def update_alarm(alarm):
     sql_query = (' UPDATE alarm'
                  ' SET')
 
-    if 'user_id' in alarm:
+    # Note (alexstav): 'user_id' and 'project_id' may be None-type
+    if alarm['user_id']:
         user_id_q = ("SELECT id FROM users"
                      " WHERE uuid = %s")
         with PoolConnection(self.conn_pool) as db:
@@ -18,7 +19,7 @@ def update_alarm(alarm):
             LOG.debug(_("User does not exist in DB"))
             return
 
-    if 'project_id' in alarm:
+    if alarm['project_id']:
         project_id_q = ('SELECT id from projects'
                         ' WHERE uuid = %s')
         with PoolConnection(self.conn_pool) as db:
