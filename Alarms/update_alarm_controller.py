@@ -4,7 +4,7 @@ def update_alarm(alarm):
     sql_query = (' UPDATE alarm'
                  ' SET')
 
-    if alarm['user_id']:
+    if 'user_id' in alarm:
         user_id_q = ("SELECT id FROM users"
                      " WHERE uuid = %s")
         with PoolConnection(self.conn_pool) as db:
@@ -18,7 +18,7 @@ def update_alarm(alarm):
             LOG.debug(_("User does not exist in DB"))
             return
 
-    if alarm['project_id']:
+    if 'project_id' in alarm:
         project_id_q = ('SELECT id from projects'
                         ' WHERE uuid = %s')
         with PoolConnection(self.conn_pool) as db:
@@ -32,27 +32,25 @@ def update_alarm(alarm):
             LOG.debug(_("Project does not exist in DB"))
             return
 
-    # Note (alexstav): "'key' in dict" form required
-    # for values with bool or empty array types
     if 'enabled' in alarm:
         sql_query += ' enabled = %s,'
         values.append(alarm['enabled'])
-    if alarm['name']:
+    if 'name' in alarm:
         sql_query += ' name = %s,'
         values.append(alarm['name'])
-    if alarm['description']:
+    if 'description' in alarm:
         sql_query += ' description = %s,'
         values.append(alarm['description'])
-    if alarm['state']:
+    if 'state' in alarm:
         sql_query += ' state = %s,'
         values.append(alarm['state'])
-    if alarm['alarm_actions']:
+    if 'alarm_actions' in alarm:
         sql_query += ' alarm_actions = %s,'
         values.append(Json(alarm['alarm_actions']))
-    if alarm['ok_actions']:
+    if 'ok_actions' in alarm:
         sql_query += ' ok_actions = %s,'
         values.append(Json(alarm['ok_actions']))
-    if alarm['insufficient_data_actions']:
+    if 'insufficient_data_actions' in alarm:
         sql_query += ' insufficient_data_actions = %s,'
         values.append(Json(alarm['insufficient_data_actions']))
     if 'repeat_actions' in alarm:
@@ -61,7 +59,7 @@ def update_alarm(alarm):
     if 'time_constraints' in alarm:
         sql_query += ' time_constraints = %s,'
         values.append(Json(alarm['time_constraints']))
-    if alarm['rule']:
+    if 'rule' in alarm:
         sql_query += ' rule = %s'
         values.append(Json(alarm['rule']))
 
